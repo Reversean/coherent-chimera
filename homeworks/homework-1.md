@@ -6,13 +6,7 @@
 2. **Архитектура:** x86_64;
 3. **Микроархитектура:** Skylake;
 4. **Кодовое имя микроархитектуры:** Skylake;
-5. **Расширенные наборы инструкций:** fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush
-   dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good
-   nopl xtopology nonstop_tsc cpuid aperfmperf pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16
-   xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm
-   3dnowprefetch cpuid_fault invpcid_single pti ibrs ibpb stibp tpr_shadow flexpriority ept vpid ept_ad fsgsbase
-   tsc_adjust bmi1 hle avx2 smep bmi2 erms invpcid rtm mpx rdseed adx smap clflushopt intel_pt xsaveopt xsavec xgetbv1
-   xsaves dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp vnmi;
+5. **Расширенные наборы инструкций:** mmx fma avx2 sse4_2;
 6. **Число ядер:** 4;
 7. **Число потоков, обрабатываемых на кристалле: 4**;
 8. **Размер кэш-памяти всех уровней:**
