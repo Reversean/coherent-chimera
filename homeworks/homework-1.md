@@ -22,7 +22,7 @@
 9. **Связность кэш-памяти последнего уровня (общая/не общая для какого числа ядер):** общая;
 10. **Диаграмма всех уровней кэш-памяти (пакет hwloc):**
 
-![lstopo.png](images/hw-1/lstopo.png)
+![lstopo.png](images/homework-1/lstopo.png)
 
 ## 2. Дистрибутив
 
@@ -277,8 +277,8 @@ reboot
 
 И rEFInd появился в меню последовательности загрузки биос без всяких проблем:
 
-![UEFI Boot menu.png](images/hw-1/UEFI Boot menu.png)
+![UEFI Boot menu.png](images/homework-1/UEFI Boot menu.png)
 
 Сам rEFInd также работает без проблем, позволяет запускать как Windows, так и установленный Arch:
 
-![UEFI Boot menu.png](images/hw-1/rEFInd menu.png)
+![UEFI Boot menu.png](images/homework-1/rEFInd menu.png)
