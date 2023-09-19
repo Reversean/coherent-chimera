@@ -1,0 +1,4 @@
+[submodule "labs/lab-1/binary-tree-sum"]
+	path = labs/lab-1/binary-tree-sum
+	url = https://github.com/Reversean/binary-tree-sum.git
+	branch = simple
