@@ -6,6 +6,8 @@
 
 [2. Лекция 18.09](lectures/lecture-2.md)
 
+[3. Лекция 02.10](lectures/lecture-3.md)
+
 ## Домашние работы
 
 [1. Создание инструментальной платформы на базе GNU/Linux](homeworks/homework-1.md)
