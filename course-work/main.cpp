@@ -30,5 +30,7 @@ int main(int argc, char *argv[]) {
   char *matrixBPath = argv[2];
   char *outputMatrixPath = argv[3];
   TestMultiplyMatrices(matrixAPath, matrixBPath, outputMatrixPath);
+//  auto runtime= MultiplyMatrices(matrixAPath, matrixBPath, outputMatrixPath);
+//  printf("|    | %lf |\n", runtime);
   return 0;
 }

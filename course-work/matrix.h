@@ -16,9 +16,9 @@ using namespace std;
 //};
 
 struct MatrixStr {
-  alignas(8) size_t rowCount;
-  alignas(8) size_t columnCount;
-  alignas(16) int** data;
+  alignas(32) size_t rowCount;
+  alignas(32) size_t columnCount;
+  alignas(32) int** data;
 };
 
 class Matrix {

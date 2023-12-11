@@ -59,14 +59,17 @@ void Matrix::write(char *matrixFilePath) {
 
 Matrix *Matrix::multiply(Matrix *matrixA, Matrix *matrixB) {
   auto result = new Matrix(matrixA->getRowCount(), matrixB->getColumnCount());
-  int temp;
-#pragma omp parallel for shared(matrixA, matrixB, result) private(temp) default(none)
+  auto matrixAData = matrixA->getData();
+  auto matrixBData = matrixB->getData();
+  auto resultData = result->getData();
+  int temp1, *temp2;
   for (int i = 0; i < matrixA->getRowCount(); ++i) {
     for (int j = 0; j < matrixB->getRowCount(); ++j) {
-      temp = matrixA->getData()[i][j];
-#pragma omp simd
+      temp1 = matrixAData[i][j];
+      temp2 = matrixBData[j];
+#pragma omp simd aligned(temp2:32)
       for (int k = 0; k < matrixB->getColumnCount(); ++k) {
-        result->getData()[i][k] += temp * matrixB->getData()[j][k];
+        resultData[i][k] += temp1 * temp2[k];
       }
     }
   }
@@ -74,18 +77,16 @@ Matrix *Matrix::multiply(Matrix *matrixA, Matrix *matrixB) {
 }
 
 //Matrix *Matrix::multiply(Matrix *matrixA, Matrix *matrixB) {
-//  auto matrixARowCount = matrixA->getRowCount();
-//  auto matrixBRowCount = matrixB->getRowCount();
-//  auto matrixBColumnCount = matrixB->getColumnCount();
-//  auto result = new Matrix(matrixARowCount, matrixBColumnCount);
-//  auto matrixAData = matrixA->getData();
-//  auto matrixBData = matrixB->getData();
-//  auto resultData = result->getData();
-//#pragma omp parallel for shared(resultData, matrixAData, matrixBData, matrixARowCount, matrixBRowCount, matrixBColumnCount) default(none)
-//  for (int k = 0; k < matrixARowCount; ++k) {
-//    for (int j = 0; j < matrixBRowCount; ++j) {
-//      for (int i = 0; i < matrixBColumnCount; ++i) {
-//        resultData[k][i] += matrixBData[j][i] * matrixAData[k][j];
+//  auto result = new Matrix(matrixA->getRowCount(), matrixB->getColumnCount());
+//  int temp1, *temp2;
+//#pragma omp parallel for shared(matrixA, matrixB, result) private(temp1, temp2) default(none)
+//  for (int i = 0; i < matrixA->getRowCount(); ++i) {
+//    for (int j = 0; j < matrixB->getRowCount(); ++j) {
+//      temp1 = matrixA->getData()[i][j];
+//      temp2 = matrixB->getData()[j];
+//#pragma omp simd aligned(temp2:32)
+//      for (int k = 0; k < matrixB->getColumnCount(); ++k) {
+//        result->getData()[i][k] += temp1 * temp2[k];
 //      }
 //    }
 //  }
