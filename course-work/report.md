@@ -1,5 +1,9 @@
 # Лабораторная работа "Многоязыковое параллельное программирование"
 
+Выполнил студент группы 5140901/21501 Лихолетов М.Д.
+
+---
+
 ## Техническое задание
 
 Имеются две матрицы размерами AxB, BxC, необходимо их умножить.
@@ -20,7 +24,8 @@
 В качестве оболочки для хранения данных матрицы был создан класс `Matrix` с полем типа `MatrixStruct` (пользовательская
 структура, требуется для дальнейшей оптимизации). Сами числовые значения хранятся в двумерном массиве `int **`.
 
-В качестве тестовых данных были сгенерированы 2 матрицы размером 2500x2500.
+В качестве тестовых данных были сгенерированы 2 матрицы размером 2500x2500. Входные и выходные данные хранятся в виде
+файлов.
 
 В качестве простой реализации используется математическое решение с поэлементным перемножением и сложением
 соответствующих элементов двух матриц:
@@ -42,7 +47,7 @@ Matrix *Matrix::multiply(Matrix *matrixA, Matrix *matrixB) {
 }
 ```
 
-Компиляция решения (векторизация временно отключена для исследования прироста производительности):
+Компиляция решения (векторизация явно отключена для исследования прироста производительности):
 
 ```shell
 g++ -fopenmp -fno-tree-vectorize main.cpp matrix.cpp matrix.h -o simple.out 
@@ -67,7 +72,7 @@ g++ -fopenmp -fno-tree-vectorize main.cpp matrix.cpp matrix.h -o simple.out
 | 9  | 65.543694 |
 | 10 | 65.565879 |
 
-Average time: 65.62
+Среднее время выполнения: 65.62
 
 ## Оптимизация компилятором
 
@@ -79,6 +84,8 @@ Average time: 65.62
 ```shell
 g++ -fopenmp -O2 -fno-tree-vectorize main.cpp matrix.cpp matrix.h -o o2-opt.out 
 ```
+
+Запуск программы:
 
 ```shell
 ./o2-opt.out matrix-a.txt matrix-b.txt matrix-out.txt
@@ -97,7 +104,7 @@ g++ -fopenmp -O2 -fno-tree-vectorize main.cpp matrix.cpp matrix.h -o o2-opt.out
 | 9  | 8.835325 |
 | 10 | 8.801019 |
 
-Average: 8.938719
+Среднее время выполнения: 8.938719
 
 В результате был получен прирост производительности примерно в 8 раз.
 
@@ -109,6 +116,8 @@ Average: 8.938719
 ```shell
 g++ -fopenmp -O2 -march=skylake -fno-tree-vectorize main.cpp matrix.cpp matrix.h -o arch-opt.out 
 ```
+
+Запуск программы:
 
 ```shell
 ./arch-opt.out matrix-a.txt matrix-b.txt matrix-out.txt
@@ -127,7 +136,7 @@ g++ -fopenmp -O2 -march=skylake -fno-tree-vectorize main.cpp matrix.cpp matrix.h
 | 9  | 8.845301 |
 | 10 | 8.860294 |
 
-Average: 8.925405
+Среднее время выполнения: 8.925405
 
 Прироста производительности данная оптимизация не дала.
 
@@ -135,7 +144,8 @@ Average: 8.925405
 
 Для векторизации было сделано два действия.
 
-Во-первых, была добавлена директива, указывающая компилятору оптимизировать цикл под использование SIMD-операций
+Во-первых, была добавлена директива, указывающая компилятору оптимизировать внутренний цикл под использование 
+SIMD-операций:
 
 ```c++
 Matrix *Matrix::multiply(Matrix *matrixA, Matrix *matrixB) {
@@ -158,11 +168,13 @@ Matrix *Matrix::multiply(Matrix *matrixA, Matrix *matrixB) {
 ```
 
 Во-вторых, при сборке флаг `fno-tree-vectorize`, отключающий векторизацию, был заменен на `ftree-vectorize`, явно
-указывающий на ее включение:
+указывающий компилятору использовать векторизацию:
 
 ```shell
 g++ -fopenmp -O2 -march=skylake -ftree-vectorize main.cpp matrix.cpp matrix.h -o vectorize.out
 ```
+
+Запуск программы:
 
 ```shell
 ./vectorize.out matrix-a.txt matrix-b.txt matrix-out.txt
@@ -181,7 +193,7 @@ g++ -fopenmp -O2 -march=skylake -ftree-vectorize main.cpp matrix.cpp matrix.h -o
 | 9  | 4.206985 |
 | 10 | 4.912950 |
 
-Average: 4.497497
+Среднее время выполнения: 4.497497
 
 Векторизация дала прирост производительности в 2 раза.
 
@@ -190,8 +202,10 @@ Average: 4.497497
 К структуре `MatrixStructure` можно применить выравнивание адресов. Для этого для полей структуры при помощи
 конструкции `alignas` можно указать количество бит для выравнивания хранящихся в ней значений.
 
-Посредством анализа скомпилированной программы при помощи утилиты `pahole` (для анализа программа должна быть собрана с
-флагом `-g`), были подобраны коэффициенты для выравнивания полей:
+С учетом архитектуры используемого CPU и анализа скомпилированной программы при помощи утилиты `pahole` (для анализа 
+программа должна быть собрана с флагом `-g`), были подобраны коэффициенты для выравнивания полей:
+
+Однако учитывая для того, чтобы выравнивание работало как надо на 64-битной архитектуре 
 
 ```c++
 struct MatrixStr {
@@ -202,7 +216,7 @@ struct MatrixStr {
 ```
 
 Также была модифицирована директива `#pragma omp simd`: был указан модификатор `aligned`, указывающий компилятору, что
-требуется сделать выравнивание
+требуется сделать выравнивание массива с входными данными:
 
 ```c++
 Matrix *Matrix::multiply(Matrix *matrixA, Matrix *matrixB) {
@@ -225,9 +239,13 @@ Matrix *Matrix::multiply(Matrix *matrixA, Matrix *matrixB) {
 }
 ```
 
+Компиляция решения:
+
 ```shell
 g++ -fopenmp -O2 -march=skylake -ftree-vectorize main.cpp matrix.cpp matrix.h -o alignment.out
 ```
+
+Запуск программы:
 
 ```shell
 ./alignment.out matrix-a.txt matrix-b.txt matrix-out.txt
@@ -246,13 +264,14 @@ g++ -fopenmp -O2 -march=skylake -ftree-vectorize main.cpp matrix.cpp matrix.h -o
 | 9  | 3.708727 |
 | 10 | 3.701846 |
 
-Average: 3.7114759
+Среднее время выполнения: 3.7114759
 
-Выравнивание не дало значительный прирост производительности.
+Выравнивание адресов дало некоторый прирост производительности (меньше секунды).
 
 ## Многопоточность
 
-Для реализации многопоточного кода воспользуемся библиотекой OpenMP. Для параллелизации можно указать внешний цикл:
+Для реализации многопоточного кода воспользуемся библиотекой OpenMP. Для параллелизации можно указать специальную 
+директиву, указывающую выполнять итерации внешнего цикла параллельно:
 
 ```c++
 Matrix *Matrix::multiply(Matrix *matrixA, Matrix *matrixB) {
@@ -274,14 +293,18 @@ Matrix *Matrix::multiply(Matrix *matrixA, Matrix *matrixB) {
 ```
 
 В разделяемых данных были указаны все матрицы (2 входные и одна выходная), т.к. эти данные требуется читать или
-записывать из всех потоков, оставшаяся переменная для хранения значения из входной матрицы A указана как локальная.
+записывать из всех потоков, остальные временные переменные указаны как приватные.
 
 Т.к. гарантируется, что каждый поток может изменять в результирующем массиве только свой ряд матрицы, то дополнительных
 средств синхронизации не требуется.
 
+Компиляция решения:
+
 ```shell
 g++ -fopenmp -O2 -march=skylake -ftree-vectorize main.cpp matrix.cpp matrix.h -o multi-thread.out
 ```
+
+Запуск программы:
 
 ```shell
 ./multi-thread.out matrix-a.txt matrix-b.txt matrix-out.txt
@@ -300,19 +323,13 @@ g++ -fopenmp -O2 -march=skylake -ftree-vectorize main.cpp matrix.cpp matrix.h -o
 | 9  | 1.010876 |
 | 10 | 1.116143 |
 
-Average: 1.103826
+Среднее время выполнения: 1.103826
 
 Распараллеливание дало большой прирост производительности более чем в 3 раза.
 
 ## Shared Object
 
 Данную программу можно использовать нативно в качестве динамической библиотеки.
-
-Для создания .so-файла требуется скомпилировать программу с соответствующим флагом:
-
-```shell
-g++ -fopenmp -O2 -march=skylake -ftree-vectorize -fPIC -shared matrix.cpp -o multiply-matrices.so
-```
 
 Для проверки возможностей использования нативной библиотеки в программах на других языках, было решено создать
 GUI-приложение на языке программирования Python с использованием фреймворка PyQT6.
@@ -340,7 +357,13 @@ extern "C" {
 }
 ```
 
-Также требуется обозначить API на стороне python-приложения:
+Для создания .so-файла требуется скомпилировать программу с соответствующим флагом:
+
+```shell
+g++ -fopenmp -O2 -march=skylake -ftree-vectorize -fPIC -shared matrix.cpp -o multiply-matrices.so
+```
+
+Также требуется обозначить ABI на стороне python-приложения:
 
 ```python
 import ctypes
@@ -351,7 +374,66 @@ multiply_matrices = multiply_matrices_lib.MultiplyMatrices
 multiply_matrices.argtypes = [c_char_p, c_char_p, c_char_p]
 ```
 
-Остальной код на языке python настраивает отображение GUI.
+Остальной код на языке python настраивает отображение GUI:
+
+```python
+from PyQt6.QtWidgets import (QApplication, QDialog, QGridLayout, QLineEdit, QPushButton)
+
+class WidgetGallery(QDialog):
+
+    def __init__(self, parent=None):
+        super(WidgetGallery, self).__init__(parent)
+
+        self.multiply_matrices_lib = ctypes.CDLL('../multiply-matrices.so')
+        self.multiply_matrices = self.multiply_matrices_lib.MultiplyMatrices
+        self.multiply_matrices.argtypes = [c_char_p, c_char_p, c_char_p]
+
+        self.matrix_a_path_line = QLineEdit('/home/Reversean/code/coherent-chimera/course-work/matrix-a.txt')
+        self.matrix_a_path_line.setObjectName('Matrix A Path')
+        self.matrix_a_path_line.setPlaceholderText('Matrix A')
+
+        self.matrix_b_path_line = QLineEdit('/home/Reversean/code/coherent-chimera/course-work/matrix-b.txt')
+        self.matrix_b_path_line.setObjectName('Matrix B Path')
+        self.matrix_b_path_line.setPlaceholderText('Matrix B')
+
+        self.output_matrix_path_line = QLineEdit('/home/Reversean/code/coherent-chimera/course-work/test.txt')
+        self.output_matrix_path_line.setObjectName('Output Matrix Path')
+        self.output_matrix_path_line.setPlaceholderText('Output Matrix')
+
+        multiply_button = QPushButton('Multiply Matrices')
+        multiply_button.clicked.connect(self.multiply_button_click)
+
+        layout = QGridLayout()
+        layout.addWidget(self.matrix_a_path_line, 0, 0, 1, 2)
+        layout.addWidget(self.matrix_b_path_line, 1, 0, 1, 2)
+        layout.addWidget(self.output_matrix_path_line, 2, 0, 1, 2)
+        layout.addWidget(multiply_button, 3, 0, 1, 2)
+        layout.setRowStretch(4, 1)
+        self.setLayout(layout)
+        self.setWindowTitle("Matrices Multiplication")
+
+    def multiply_button_click(self):
+        matrix_a_path = self.matrix_a_path_line.text()
+        matrix_b_path = self.matrix_b_path_line.text()
+        output_matrix_path = self.output_matrix_path_line.text()
+        print(matrix_a_path)
+        print(matrix_b_path)
+        print(output_matrix_path)
+        self.multiply_matrices(
+            matrix_a_path.encode('utf-8'),
+            matrix_b_path.encode('utf-8'),
+            output_matrix_path.encode('utf-8')
+        )
+
+
+if __name__ == '__main__':
+    import sys
+
+    app = QApplication(sys.argv)
+    gallery = WidgetGallery()
+    gallery.show()
+    sys.exit(app.exec())
+```
 
 Полученную программу удалось запустить и отладить.
 
@@ -359,8 +441,9 @@ multiply_matrices.argtypes = [c_char_p, c_char_p, c_char_p]
 
 В результате всех применённых оптимизаций удалось существенно увеличить производительность программы.
 
-Наибольшее влияние оказали использование -O2, векторизация и параллелизация.
+Ощутимое влияние оказали использование второго уровня оптимизации компилятором, векторизация, выравнивание адресов и 
+параллелизация.
 
 Также получилось настроить взаимодействие между реализованной на С++ библиотекой и GUI-приложения на Python с
-использованием библиотеки PyQT6, однако в силу того, что python-программы гораздо менее производительные, чем программы
-на C++, производительность заставляет желать лучшего.
+использованием библиотек ctypes PyQT6, однако в силу того, что python-программы гораздо менее производительные, чем 
+программы на C++, производительность заставляет желать лучшего.
